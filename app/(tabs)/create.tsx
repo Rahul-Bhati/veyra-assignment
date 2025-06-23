@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Alert, ScrollView, ToastAndroid } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Camera, Image as ImageIcon, Smile, MapPin, Tag, Mic, Eye, EyeOff } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/services/firebaseConfig';
 
 export default function Create() {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // const imageUri = useLocalSearchParams();
+  // console.log(imageUri);
+  const { user, selectedImage, setSelectedImage, updateProfile } = useAuth();
   const [caption, setCaption] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [location, setLocation] = useState('');
@@ -39,32 +44,82 @@ export default function Create() {
     setSelectedImage('https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=600&h=600');
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!selectedImage) {
-      Alert.alert('Error', 'Please select an image first');
+      ToastAndroid.show("Please select an image first", ToastAndroid.SHORT);
+      // Alert.alert('Error', 'Please select an image first');
       return;
     }
 
     if (!caption.trim()) {
-      Alert.alert('Error', 'Please add a caption');
+      ToastAndroid.show("Please add a caption", ToastAndroid.SHORT);
+      // Alert.alert('Error', 'Please add a caption');
       return;
     }
 
+    if (!selectedImage) {
+      ToastAndroid.show('Please select an image', ToastAndroid.SHORT);
+      return;
+    }
+
+    try {
+      const postId = Date.now().toString();
+      const postData = {
+        userId: user && user.id,
+        imageUrl: selectedImage, // Rename selectedImage to imageUrl for clarity
+        caption,
+        timestamp: new Date(), // Use timestamp to match getPosts query
+        likes: 0,
+        comments: [],
+      };
+
+      // Store post in the posts collection
+      await setDoc(doc(db, 'posts', postId), postData);
+
+      // Update user's profile with the post reference
+      await updateProfile({ posts: [{ id: postId, imageUrl: selectedImage }] });
+
+      ToastAndroid.show('Post uploaded successfully', ToastAndroid.SHORT);
+      // setS(null);
+      setCaption('');
+      router.replace('/(tabs)'); // Redirect to home feed
+    } catch (error) {
+      console.error('Post upload error:', error);
+      ToastAndroid.show('Failed to upload post', ToastAndroid.SHORT);
+    }
+
     // Mock post creation
-    Alert.alert('Success', 'Your post has been shared!', [
-      { text: 'OK', onPress: () => router.push('/(tabs)') }
-    ]);
+    // Alert.alert('Success', 'Your post has been shared!', [
+    //   { text: 'OK', onPress: () => router.push('/(tabs)') }
+    // ]);
   };
+
+  const handleCancel = () => {
+    setSelectedImage(null!);
+    router.back();
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused; do nothing
+
+      return () => {
+        // Screen is unfocused
+        setSelectedImage(null!);
+      };
+    }, [])
+  );
+
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={handleCancel}>
           <Text style={styles.cancelButton}>Cancel</Text>
         </TouchableOpacity>
-        
+
         <Text style={styles.title}>New Post</Text>
-        
+
         <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
           <Text style={styles.shareButtonText}>Share</Text>
         </TouchableOpacity>
@@ -101,7 +156,7 @@ export default function Create() {
                   <Camera size={32} color="#666" />
                   <Text style={styles.imageOptionText}>Camera</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={styles.imageOption}
                   onPress={handleGalleryPress}

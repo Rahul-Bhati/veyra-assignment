@@ -16,18 +16,10 @@
     "experiments": {
       "typedRoutes": true
     },
-    "android": {
-      "googleServicesFile": "./google-services.json",
-      "package": "com.instacloneapp.myapp"
-    },
-    "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.instacloneapp.myapp",
-      "supportsTablet": true
-    },
     "plugins": [
       "expo-router",
       "expo-font",
+      "expo-notifications",
       "expo-web-browser",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",

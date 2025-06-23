@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, Grid2x2 as Grid, Bookmark, User, MoveHorizontal as MoreHorizontal } from 'lucide-react-native';
+import { Settings, Grid2x2 as Grid, Bookmark, User, MoveHorizontal as MoreHorizontal, EllipsisVertical, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockPosts } from '@/data/mockData';
+import getPosts from '@/utils/getPosts';
 
 const { width } = Dimensions.get('window');
 const imageSize = (width - 6) / 3;
@@ -12,7 +13,8 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const [selectedTab, setSelectedTab] = useState<'posts' | 'saved'>('posts');
 
-  const userPosts = mockPosts.filter(post => post.userId === user?.id);
+  // const userPosts = mockPosts.filter(post => post.userId === user?.id);
+  const [userPosts, setUserPosts] = useState(null);
   const savedPosts = mockPosts.filter(post => post.saved);
 
   const handleLogout = () => {
@@ -24,6 +26,16 @@ export default function Profile() {
       <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
     </TouchableOpacity>
   );
+
+  useEffect(() => {
+    // Pass setUserPosts as a callback to getPosts
+    const unsubscribe = getPosts(setUserPosts);
+
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
+  }, []);
+
+  console.log('Current posts:', userPosts);
 
   const renderTabContent = () => {
     const data = selectedTab === 'posts' ? userPosts : savedPosts;
@@ -49,7 +61,7 @@ export default function Profile() {
             <Settings size={24} color="#000" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerButton} onPress={handleLogout}>
-            <MoreHorizontal size={24} color="#000" />
+            <LogOut size={24} color="#000" />
           </TouchableOpacity>
         </View>
       </View>
@@ -60,7 +72,7 @@ export default function Profile() {
           
           <View style={styles.stats}>
             <View style={styles.stat}>
-              <Text style={styles.statNumber}>{user?.posts}</Text>
+              <Text style={styles.statNumber}>{user?.posts?.length}</Text>
               <Text style={styles.statLabel}>posts</Text>
             </View>
             <View style={styles.stat}>

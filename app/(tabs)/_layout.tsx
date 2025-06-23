@@ -1,21 +1,24 @@
 import { Tabs } from 'expo-router';
-import { Chrome as Home, Search, SquarePlus as PlusSquare, Heart, User } from 'lucide-react-native';
+import { Search, SquarePlus as PlusSquare, Heart, User, House } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 
 export default function TabLayout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    console.log('Tabs layout auth state:', { isLoading, isAuthenticated });
+    // Only redirect if not loading and not authenticated
+    if (!isLoading && !isAuthenticated) {
       router.replace('/auth');
     }
-  }, [isAuthenticated]);
+  }, [isLoading, isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
+  // Render nothing while loading or if not authenticated
+  if (isLoading || !isAuthenticated) {
+    return null; // Or a loading spinner
   }
 
   return (
@@ -44,7 +47,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} strokeWidth={2} />
+            <House size={size} color={color} strokeWidth={2} />
           ),
         }}
       />

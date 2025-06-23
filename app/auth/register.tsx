@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  ToastAndroid,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,17 +28,17 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword || !username || !fullName) {
-      Alert.alert('Error', 'Please fill in all fields');
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.SHORT);
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      ToastAndroid.show('Passwords do not match', ToastAndroid.SHORT);
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      ToastAndroid.show('Password must be at least 6 characters', ToastAndroid.SHORT);
       return;
     }
 
@@ -47,10 +48,10 @@ export default function Register() {
       if (success) {
         router.replace('/(tabs)');
       } else {
-        Alert.alert('Error', 'Registration failed');
+        ToastAndroid.show('Registration failed', ToastAndroid.SHORT);
       }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong');
+      ToastAndroid.show('Something went wrong', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }

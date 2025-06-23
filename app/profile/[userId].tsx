@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Grid2x2 as Grid, Bookmark, User, MoveHorizontal as MoreHorizontal, MessageCircle, UserPlus, UserMinus, Settings } from 'lucide-react-native';
+import { ArrowLeft, Grid2x2 as Grid, Bookmark, User, MoveHorizontal as MoreHorizontal, MessageCircle, UserPlus, UserMinus, Settings, EllipsisVertical, ChevronLeft } from 'lucide-react-native';
 import { mockUsers, mockPosts } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -107,17 +107,19 @@ export default function UserProfile() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#000" />
-          </TouchableOpacity>
-          
-          <View style={styles.headerCenter}>
-            <Text style={styles.username}>{user.username}</Text>
-            {user.verified && <Text style={styles.verified}>✓</Text>}
+          <View style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center", gap:"10"}}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <ChevronLeft size={20} color="#000" />
+            </TouchableOpacity>
+            
+            <View style={styles.headerCenter}>
+              <Text style={styles.username}>{user.username}</Text>
+              {user.verified && <Text style={styles.verified}>✓</Text>}
+            </View>
           </View>
           
           <TouchableOpacity>
-            <MoreHorizontal size={24} color="#000" />
+            <EllipsisVertical size={24} color="#000" />
           </TouchableOpacity>
         </View>
 

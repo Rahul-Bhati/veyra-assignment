@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { ArrowLeft, Camera, RotateCcw, Zap, ZapOff, Image as ImageIcon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,6 +13,7 @@ export default function CameraScreen() {
   const router = useRouter();
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState(false);
+  const { selectedImage, setSelectedImage} = useAuth();
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
@@ -55,6 +57,7 @@ export default function CameraScreen() {
         
         if (photo?.uri) {
           setCapturedImage(photo.uri);
+          // setSelectedImage(photo.uri);
         }
       } catch (error) {
         Alert.alert('Error', 'Failed to take picture');
@@ -81,10 +84,11 @@ export default function CameraScreen() {
 
   const usePhoto = () => {
     if (capturedImage) {
+      setSelectedImage(capturedImage);
       // Navigate to create post with the captured image
       router.push({
         pathname: '/(tabs)/create',
-        params: { imageUri: capturedImage }
+        // params: { imageUri: capturedImage }
       });
     }
   };
